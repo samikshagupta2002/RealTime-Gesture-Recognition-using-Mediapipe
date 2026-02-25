@@ -8,7 +8,8 @@ class GestureRecognizer:
     def main(self):
         """Main function to run the gesture recognition"""
         num_hands = 1
-        model_path = "custom_model_2.task"
+        import os
+        model_path = os.path.join(os.path.dirname(__file__), "custom_model_2.task")
         GestureRecognizer = mp.tasks.vision.GestureRecognizer
         GestureRecognizerOptions = mp.tasks.vision.GestureRecognizerOptions
         VisionRunningMode = mp.tasks.vision.RunningMode

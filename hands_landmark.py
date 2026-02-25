@@ -89,45 +89,50 @@ class GestureRecognizer:
     #this proceses the video frames for gesture recognition
     def process_video(self):
         cap = cv2.VideoCapture(0)#starts video feed 
-
-        while True:
-            ret, frame = cap.read()                               #reads frames in video feed
-            frame = cv2.flip(frame, 1)                            #flips frames horizontally
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)    #converts frame from BGR to RGB
-
-            frame_rgb.flags.writeable = False                     #this improves performance in Mediapipe
-            result = self.hands.process(frame_rgb)                #processing frame to detect hand landmarks
-            frame_rgb.flags.writeable = True
-
-            frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)     #converting frame to BGR for rendering
-            
-            #drawing landmarks on the frame if hands are detected
-            if result.multi_hand_landmarks:
-                for hand_landmarks in result.multi_hand_landmarks:
-                    self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS,
-                                                self.mp_draw.DrawingSpec(color=(255, 0, 255),thickness=5, circle_radius=5))
-                    self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS, connection_drawing_spec=self.mp_draw.DrawingSpec((0, 255, 0), thickness=5, circle_radius=3))
+        
+        try:
+            while True:
+                ret, frame = cap.read()                               #reads frames in video feed
+                if not ret:
+                    break
                     
-                    # Detect the gesture and display the text output                        
-                    if self.detect_peace_sign(hand_landmarks):
-                        #text in frame if gesture is detected
-                        cv2.putText(frame, "Peace..out", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-                    
-                    if self.detect_thumbsup(hand_landmarks):
-                        #text in frame if gesture is detected
-                        cv2.putText(frame, "Thumbs Up", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                frame = cv2.flip(frame, 1)                            #flips frames horizontally
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)    #converts frame from BGR to RGB
 
-                    if self.detect_two_fists(hand_landmarks):
-                        #text in frame if gesture is detected
-                        cv2.putText(frame, "Ngumi Mbwegze", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                frame_rgb.flags.writeable = False                     #this improves performance in Mediapipe
+                result = self.hands.process(frame_rgb)                #processing frame to detect hand landmarks
+                frame_rgb.flags.writeable = True
 
-            cv2.imshow("Peace Sign Hands Detection ", frame)
+                frame = cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR)     #converting frame to BGR for rendering
+                
+                #drawing landmarks on the frame if hands are detected
+                if result.multi_hand_landmarks:
+                    for hand_landmarks in result.multi_hand_landmarks:
+                        self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS,
+                                                    self.mp_draw.DrawingSpec(color=(255, 0, 255),thickness=5, circle_radius=5))
+                        self.mp_draw.draw_landmarks(frame, hand_landmarks, self.mp_hands.HAND_CONNECTIONS, connection_drawing_spec=self.mp_draw.DrawingSpec((0, 255, 0), thickness=5, circle_radius=3))
+                        
+                        # Detect the gesture and display the text output                        
+                        if self.detect_peace_sign(hand_landmarks):
+                            #text in frame if gesture is detected
+                            cv2.putText(frame, "Peace..out", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+                        
+                        if self.detect_thumbsup(hand_landmarks):
+                            #text in frame if gesture is detected
+                            cv2.putText(frame, "Thumbs Up", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-            if cv2.waitKey(1) & 0xFF == 27:
-                break
+                        if self.detect_two_fists(hand_landmarks):
+                            #text in frame if gesture is detected
+                            cv2.putText(frame, "Ngumi Mbwegze", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-        cap.release()
-        cv2.destroyAllWindows()
+                cv2.imshow("Peace Sign Hands Detection ", frame)
+
+                key = cv2.waitKey(1) & 0xFF
+                if key == 27 or key == ord('q'):
+                    break
+        finally:
+            cap.release()
+            cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     recognizer = GestureRecognizer()
